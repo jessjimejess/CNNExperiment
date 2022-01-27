@@ -87,13 +87,17 @@ class BaseConvNet():
         plt.legend(['train', 'val'], loc='upper left')
 
         plt.savefig('accuracy_' + str(layers['conv']))
-            
+        plt.close()
+
         plt.plot(train_result.history['loss'])
         plt.plot(train_result.history['val_loss'])
         plt.title('model loss')
         plt.ylabel('loss')
         plt.xlabel('epoch')
+        plt.legend(['train', 'val'], loc='upper left')
+        
         plt.savefig('loss_' + str(layers['conv']))
+        plt.close()
 
     def __get_model_layers(self):
         layers_dict = {
