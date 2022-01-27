@@ -17,8 +17,8 @@ class BaseConvNet():
             epochs (int): Número de épocas del entrenamiento
             dataset_dir (str): Dirección del conjunto de datos
             validation_size (float): Tamaño del conjunto de datos de validación
-            gpu (bool): Uso de GPU para el entrenamiento (por defecto a False)
-            export_data: Escribe en un fichero de texto el resultado del entrenamiento
+            gpu (bool): Uso de GPU para el entrenamiento
+            export_data (bool): Escribe en un fichero de texto el resultado del entrenamiento y guarda el plot
             verbose (bool): mostrar resultados del entrenamiento en tiempo real
 
         Retorno:
@@ -67,14 +67,16 @@ class BaseConvNet():
         )
     
     def __write_data(self, train_result):
+        layers = self.__get_model_layers()
+
         # Escribe los datos en CSV
-        df = pd.DataFrame(data={"loss": train_result.history['loss'], 
-                                "val_loss": train_result.history['val_loss'],
-                                "accuracy": train_result.history['accuracy'],
-                                "val_accuracy": train_result.history['val_accuracy']
+        df = pd.DataFrame(data={'loss': train_result.history['loss'], 
+                                'val_loss': train_result.history['val_loss'],
+                                'accuracy': train_result.history['accuracy'],
+                                'val_accuracy': train_result.history['val_accuracy']
                                 })
         
-        df.to_csv("train_results" + str(self.__get_model_layers['conv']) + ".csv", sep=',', index=False)
+        df.to_csv('train_results' + str(layers['conv']) + '.csv', sep=',', index=False)
 
         # Guarda las gráficas de los resultados de entrenamiento
         plt.plot(train_result.history['accuracy'])
@@ -84,26 +86,26 @@ class BaseConvNet():
         plt.xlabel('epoch')
         plt.legend(['train', 'val'], loc='upper left')
 
-        plt.savefig('accuracy_' + str(self.__get_model_layers['conv']))
+        plt.savefig('accuracy_' + str(layers['conv']))
             
         plt.plot(train_result.history['loss'])
         plt.plot(train_result.history['val_loss'])
         plt.title('model loss')
         plt.ylabel('loss')
         plt.xlabel('epoch')
-        plt.savefig('loss_' + str(self.__get_model_layers['conv']))
+        plt.savefig('loss_' + str(layers['conv']))
 
-    def __get_model_layers():
+    def __get_model_layers(self):
         layers_dict = {
             'conv': 0,
             'max_pooling': 0
         }
-        
-        for layer in self.model.layers():
-            if isinstance(layer, 'Conv2D'):
+
+        for layer in self.model.layers:
+            if isinstance(layer, Conv2D):
                 layers_dict['conv'] = layers_dict['conv'] + 1
             
-            elif isinstance(layer, 'MaxPooling2D'):
+            elif isinstance(layer, MaxPooling2D):
                 layers_dict['max_pooling'] = layers_dict['max_pooling'] + 1
         
         return layers_dict
@@ -116,10 +118,10 @@ class StandarCNN(BaseConvNet):
         Construye una red neuronal con número de capas convolucionales pasadas como parámetro
 
         Atributos:
+            classes (int): número de clases a clasificar
             layer_image_shape (tuple): dimensión de la primera capa que será igual 
                                        que la dimensión de la imágen
-            convolution_layers (int): número de capas convolucionales de la redç
-            classes (int): número de clases a clasificar
+            convolution_layers (int): número de capas convolucionales de la red
         '''
 
         self.convolution_layers = convolution_layers
@@ -155,7 +157,7 @@ class ResNet50CNN(BaseConvNet):
         self.layer_image_shape = layer_image_shape
         
         # Creación de RN50
-        rs_50 = tf.keras.applications.resnet50.ResNet50(weights="imagenet", include_top=False, input_shape=layer_image_shape)
+        rs_50 = tf.keras.applications.resnet50.ResNet50(weights='imagenet', include_top=False, input_shape=layer_image_shape)
         self.model = Sequential()
         self.model.add(rs_50)
         self.model.add(Flatten())
